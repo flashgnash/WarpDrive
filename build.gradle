@@ -1,0 +1,135 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "https://maven.minecraftforge.net/"
+        }
+    }
+    dependencies {
+        classpath ('com.anatawa12.forge:ForgeGradle:1.2-1.0.+') {
+            changing = true
+        }
+    }
+}
+
+plugins {
+    id 'eclipse'
+}
+
+apply plugin: 'java'
+apply plugin: 'forge'
+
+// define the properties file
+ext.configFile = file "build.properties"
+
+configFile.withReader {
+    // read config.  it shall from now on be referenced as simply config or as project.config
+    def prop = new Properties()
+    prop.load(it)
+    ext.config = new ConfigSlurper().parse prop
+}
+
+group = "cr0s.warpdrive" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+version = "${config.minecraft_version}-${config.mod_version}.${System.getenv("BUILD_NUMBER") ?: '-'}"
+archivesBaseName = "WarpDrive"
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+minecraft {
+    version = config.minecraft_version + "-" + config.forge_version
+    runDir = "run"
+    
+    // replacing
+    replace "@version@", project.version
+    replaceIn "WarpDrive.java"
+    replaceIn "MyDummyModContainer.java"
+}
+
+dependencies {
+    // you may put jars on which you depend on in ./libs
+    // or you may define them like so..
+    //compile "some.group:artifact:version:classifier"
+    //compile "some.group:artifact:version"
+    
+    // real examples
+    //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
+    //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
+    
+    // for more info...
+    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+}
+
+processResources {
+    duplicatesStrategy = 'include'
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+    
+    // skip source assets
+    exclude '**/*.pdn'
+    exclude '**/*.psd'
+    
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+    
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+//copies the commons folder to all instances
+task copyOpenComputersCommons1(type: Copy) {
+    from 'src/main/resources/assets/warpdrive/lua.OpenComputers/common'
+    into('build/resources/main/assets/warpdrive/lua.OpenComputers/warpdriveAccelerator')
+}
+task copyOpenComputersCommons2(type: Copy) {
+    from 'src/main/resources/assets/warpdrive/lua.OpenComputers/common'
+    into('build/resources/main/assets/warpdrive/lua.OpenComputers/warpdriveEnanReactorCore')
+}
+task copyOpenComputersCommons3(type: Copy) {
+    from 'src/main/resources/assets/warpdrive/lua.OpenComputers/common'
+    into('build/resources/main/assets/warpdrive/lua.OpenComputers/warpdriveShipController')
+}
+task copyOpenComputersCommons4(type: Copy) {
+    from 'src/main/resources/assets/warpdrive/lua.OpenComputers/common'
+    into('build/resources/main/assets/warpdrive/lua.OpenComputers/warpdriveTransporterCore')
+}
+task copyOpenComputersCommons5(type: Copy) {
+    from 'src/main/resources/assets/warpdrive/lua.OpenComputers/common'
+    into('build/resources/main/assets/warpdrive/lua.OpenComputers/warpdriveWeaponController')
+}
+
+jar {
+    dependsOn copyOpenComputersCommons1, copyOpenComputersCommons2, copyOpenComputersCommons3, copyOpenComputersCommons4, copyOpenComputersCommons5
+    
+    manifest {
+        attributes 'FMLAT': 'WarpDrive_at.cfg'
+        attributes 'FMLCorePlugin': 'cr0s.warpdrive.core.FMLLoadingPlugin',
+                        'FMLCorePluginContainsFMLMod': 'true'
+    }
+    classifier = ''
+    destinationDir = file 'output'
+}
+
+idea {
+    module {
+        inheritOutputDirs = true
+    }
+}
+
+runClient {
+    jvmArgs "-Xmx2048m", "-Xms1024m", "-ea"
+}
+
+runServer {
+    jvmArgs "-Xmx2048m", "-Xms1024m", "-ea"
+}
