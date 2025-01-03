@@ -51,7 +51,12 @@ public class RenderOverlayAir {
 		                           || isVoid(entityPlayer.worldObj, x + 2, y, z)
 		                           || isVoid(entityPlayer.worldObj, x, y, z - 2)
 		                           || isVoid(entityPlayer.worldObj, x, y, z + 2);
+
+
+
+		                           
 		final boolean hasValidSetup = BreathingManager.hasValidSetup(entityPlayer);
+		final boolean needsOxygen = BreathingManager.needsOxygen(entityPlayer);
 		final float ratioAirReserve = BreathingManager.getAirReserveRatio(entityPlayer);
 		
 		// start rendering
@@ -60,13 +65,15 @@ public class RenderOverlayAir {
 		
 		// show splash message
 		int alpha = 255;
-		if (hasVoidNearby || entityPlayer.ticksExisted < WARNING_ON_JOIN_TICKS) {
-			if (!hasValidSetup) {
-				alpha = RenderCommons.drawSplashAlarm(width, height, "warpdrive.breathing.alarm", "warpdrive.breathing.invalid_setup");
-			} else if (ratioAirReserve <= 0.0F) {
-				alpha = RenderCommons.drawSplashAlarm(width, height, "warpdrive.breathing.alarm", "warpdrive.breathing.no_air");
-			} else if (ratioAirReserve < 0.15F) {
-				alpha = RenderCommons.drawSplashAlarm(width, height, "warpdrive.breathing.alarm", "warpdrive.breathing.low_reserve");
+		if(needsOxygen) {
+			if (hasVoidNearby || entityPlayer.ticksExisted < WARNING_ON_JOIN_TICKS) {
+				if (!hasValidSetup) {
+					alpha = RenderCommons.drawSplashAlarm(width, height, "warpdrive.breathing.alarm", "warpdrive.breathing.invalid_setup");
+				} else if (ratioAirReserve <= 0.0F) {
+					alpha = RenderCommons.drawSplashAlarm(width, height, "warpdrive.breathing.alarm", "warpdrive.breathing.no_air");
+				} else if (ratioAirReserve < 0.15F) {
+					alpha = RenderCommons.drawSplashAlarm(width, height, "warpdrive.breathing.alarm", "warpdrive.breathing.low_reserve");
+				}
 			}
 		}
 		

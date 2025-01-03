@@ -19,6 +19,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -139,32 +140,40 @@ public class BreathingManager {
 			final boolean hasValidSetup = hasValidSetup(entityLivingBase);
 			if (entityLivingBase instanceof EntityPlayerMP) {
 				final EntityPlayerMP player = (EntityPlayerMP) entityLivingBase;
+
+
+
+				boolean needsOxygen = needsOxygen(player); 
+
+				
 				air = player_airTank.get(uuidEntity);
 				
 				boolean hasHelmet = hasValidSetup;
-				if (hasValidSetup) {
-					if (air == null) {// new player in space => grace period
-						player_airTank.put(uuidEntity, AIR_FIRST_BREATH_TICKS);
-					} else if (air <= 1) {
-						final int ticksAir = consumeAir(player);
-						if (ticksAir > 0) {
-							player_airTank.put(uuidEntity, ticksAir);
+				if(needsOxygen) {
+					if (hasValidSetup) {
+						if (air == null) {// new player in space => grace period
+							player_airTank.put(uuidEntity, AIR_FIRST_BREATH_TICKS);
+						} else if (air <= 1) {
+							final int ticksAir = consumeAir(player);
+							if (ticksAir > 0) {
+								player_airTank.put(uuidEntity, ticksAir);
+							} else {
+								hasHelmet = false;
+							}
 						} else {
-							hasHelmet = false;
+							player_airTank.put(uuidEntity, air - 1);
 						}
-					} else {
-						player_airTank.put(uuidEntity, air - 1);
 					}
-				}
 				
-				if (!hasHelmet) {
-					if (air == null) {// new player in space => grace period
-						player_airTank.put(uuidEntity, AIR_FIRST_BREATH_TICKS);
-					} else if (air <= 1) {
-						player_airTank.put(uuidEntity, AIR_DROWN_TICKS);
-						entityLivingBase.attackEntityFrom(WarpDrive.damageAsphyxia, 2.0F);
-					} else {
-						player_airTank.put(uuidEntity, air - 1);
+					if (!hasHelmet) {
+						if (air == null) {// new player in space => grace period
+							player_airTank.put(uuidEntity, AIR_FIRST_BREATH_TICKS);
+						} else if (air <= 1) {
+							player_airTank.put(uuidEntity, AIR_DROWN_TICKS);
+							entityLivingBase.attackEntityFrom(WarpDrive.damageAsphyxia, 2.0F);
+						} else {
+							player_airTank.put(uuidEntity, air - 1);
+						}
 					}
 				}
 				
@@ -270,6 +279,15 @@ public class BreathingManager {
 			}
 		}
 		return 0;
+	}
+
+
+	public static boolean needsOxygen(final EntityPlayer entityLivingBase) {
+				NBTTagCompound nbt = new NBTTagCompound();
+				entityLivingBase.writeToNBT(nbt);
+
+				NBTTagCompound androidPlayer = nbt.getCompoundTag("AndroidPlayer"); 
+				return !androidPlayer.getBoolean("isAndroid"); 	
 	}
 	
 	public static boolean hasValidSetup(final EntityLivingBase entityLivingBase) {
