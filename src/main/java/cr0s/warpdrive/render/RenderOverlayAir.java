@@ -77,41 +77,46 @@ public class RenderOverlayAir {
 			}
 		}
 		
-		// restore texture
-		minecraft.getTextureManager().bindTexture(Gui.icons);
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+		if(needsOxygen){
+
+			// restore texture
+			minecraft.getTextureManager().bindTexture(Gui.icons);
+			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		
-		// position right above food bar
-		final int left = width / 2 + 91;
-		final int top = height - GuiIngameForge.right_height;
+			// position right above food bar
+			final int left = width / 2 + 91;
+			final int top = height - GuiIngameForge.right_height;
 		
-		// draw animated air bubble
-		final long timeWorld =  entityPlayer.worldObj.getTotalWorldTime();
-		if (ratioAirReserve != ratioPreviousAir) {
-			timePreviousAir = timeWorld;
-			ratioPreviousAir = ratioAirReserve;
-		}
-		final long timeDelta = timeWorld - timePreviousAir;
-		if (timeDelta >= 0 && timeDelta <= 8) {
-			RenderCommons.drawTexturedModalRect(left - 9, top, 25, 18, 9, 9, 100);
-		} else if (timeDelta < 0 || timeDelta > 16) {
-			RenderCommons.drawTexturedModalRect(left - 9, top, 16, 18, 9, 9, 100);
-		}
+			// draw animated air bubble
+			final long timeWorld =  entityPlayer.worldObj.getTotalWorldTime();
+			if (ratioAirReserve != ratioPreviousAir) {
+				timePreviousAir = timeWorld;
+				ratioPreviousAir = ratioAirReserve;
+			}
+			final long timeDelta = timeWorld - timePreviousAir;
+			if (timeDelta >= 0 && timeDelta <= 8) {
+				RenderCommons.drawTexturedModalRect(left - 9, top, 25, 18, 9, 9, 100);
+			} else if (timeDelta < 0 || timeDelta > 16) {
+				RenderCommons.drawTexturedModalRect(left - 9, top, 16, 18, 9, 9, 100);
+			}
+
+			// draw air level bar
+			final int full = MathHelper.ceiling_double_int(ratioAirReserve * 71.0D);
+			RenderCommons.drawTexturedModalRect(left - 81, top + 2, 20, 84, 71, 5, 100);
+			if (alpha != 255) {
+				final float factor = 1.0F - alpha / 255.0F;
+				GL11.glColor4f(1.0F, 0.2F + 0.8F * factor, 0.2F + 0.8F * factor, 1.0F);
+			}
+			RenderCommons.drawTexturedModalRect(left - 10 - full, top + 2, 91 - full, 89, full, 5, 100);
 		
-		// draw air level bar
-		final int full = MathHelper.ceiling_double_int(ratioAirReserve * 71.0D);
-		RenderCommons.drawTexturedModalRect(left - 81, top + 2, 20, 84, 71, 5, 100);
-		if (alpha != 255) {
-			final float factor = 1.0F - alpha / 255.0F;
-			GL11.glColor4f(1.0F, 0.2F + 0.8F * factor, 0.2F + 0.8F * factor, 1.0F);
-		}
-		RenderCommons.drawTexturedModalRect(left - 10 - full, top + 2, 91 - full, 89, full, 5, 100);
+			// close rendering
+			GuiIngameForge.right_height += 10;
 		
-		// close rendering
-		GuiIngameForge.right_height += 10;
-		
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		GL11.glDisable(GL11.GL_BLEND);
+			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+			GL11.glDisable(GL11.GL_BLEND);			
+			
+		}		
+
 	}
 	
 	private boolean isVoid(final IBlockAccess blockAccess, final int x, final int y, final int z) {
@@ -121,6 +126,7 @@ public class RenderOverlayAir {
 	
 	@SubscribeEvent
 	public void onRender(final RenderGameOverlayEvent.Pre event) {
+
 		if (event.type == ElementType.AIR) {
 			renderAir(event.resolution.getScaledWidth(), event.resolution.getScaledHeight());
 		}
