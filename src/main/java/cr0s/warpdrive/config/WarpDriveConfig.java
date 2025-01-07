@@ -422,6 +422,11 @@ public class WarpDriveConfig {
 	
 	// Particles accelerator
 	public static boolean ACCELERATOR_ENABLE = false;
+
+
+	public static boolean ALLOW_PLAYER_SPACE_TRAVEL = false;
+	public static int PLAYER_SPACE_TRAVEL_Y_LEVEL = 500;
+	
 	public static final double[] ACCELERATOR_TEMPERATURES_K = { 270.0, 200.0, 7.0 };
 	public static final double ACCELERATOR_THRESHOLD_DEFAULT = 0.95D;
 	public static int ACCELERATOR_MAX_PARTICLE_BUNCHES = 20;
@@ -1052,6 +1057,12 @@ public class WarpDriveConfig {
 		
 		// Particles accelerator
 		ACCELERATOR_ENABLE = config.get("accelerator", "enable", ACCELERATOR_ENABLE, "Enable accelerator blocks. Requires a compatible server, as it won't work in single player").getBoolean(false);
+
+		// Allow fly to space
+		
+		ALLOW_PLAYER_SPACE_TRAVEL = config.get("general", "enable_player_space_travel", ALLOW_PLAYER_SPACE_TRAVEL, "Allow players to travel to space without a ship by flying above a given Y level (default 500)").getBoolean(false);
+		PLAYER_SPACE_TRAVEL_Y_LEVEL = config.get("general", "player_space_travel_y_level", PLAYER_SPACE_TRAVEL_Y_LEVEL, "If enabled, the height a player must reach to go to space").getInt(500);
+
 		
 		ACCELERATOR_MAX_PARTICLE_BUNCHES = Commons.clamp(2, 100,
 				config.get("accelerator", "max_particle_bunches", ACCELERATOR_MAX_PARTICLE_BUNCHES, "Maximum number of particle bunches per accelerator controller").getInt());
