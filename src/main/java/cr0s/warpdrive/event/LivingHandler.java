@@ -138,12 +138,52 @@ public class LivingHandler {
 		// If entity is in vacuum, check and start consuming air cells
 		if (!celestialObject.hasAtmosphere()) {
 			// skip players in creative
-			if ( !(entityLivingBase instanceof EntityPlayerMP)
-			  || !((EntityPlayerMP) entityLivingBase).capabilities.isCreativeMode ) {
+			if ( !(entityLivingBase instanceof EntityPlayerMP) || !((EntityPlayerMP) entityLivingBase).capabilities.isCreativeMode ) {
 				BreathingManager.onLivingUpdateEvent(entityLivingBase, x, y, z);
 			}
 		}
+
 		
+		if (entityLivingBase instanceof EntityPlayerMP ) {
+
+			final EntityPlayerMP entityPlayerMP = (EntityPlayerMP) entityLivingBase;
+
+			final CelestialObject celestialObjectCurrent = CelestialObjectManager.get(
+				entityPlayerMP.worldObj,
+				(int) entityPlayerMP.posX,
+				(int) entityPlayerMP.posZ
+			);
+
+			if (entityLivingBase.posY > 500.0D) {
+					if ( !(celestialObjectCurrent.isSpace() || celestialObjectCurrent.isHyperspace())) {		
+						if ( celestialObjectCurrent.parent != null && !celestialObjectCurrent.parent.isVirtual() ) {
+
+							
+							int dimensionIdTarget = celestialObjectCurrent.parent.dimensionId;
+
+							int xTarget = MathHelper.floor_double(entityPlayerMP.posX);
+							int yTarget = Math.min(255, Math.max(0, MathHelper.floor_double(entityPlayerMP.posY)));
+							int zTarget = MathHelper.floor_double(entityPlayerMP.posZ);
+							
+							final VectorI vEntry = celestialObjectCurrent.getEntryOffset();
+							xTarget -= vEntry.x;
+							yTarget -= vEntry.y;
+							zTarget -= vEntry.z;
+	
+							final WorldServer worldTarget = Commons.getOrCreateWorldServer(dimensionIdTarget);
+
+							entityPlayerMP.mcServer.getConfigurationManager().transferPlayerToDimension(
+									entityPlayerMP,
+									dimensionIdTarget,
+									new SpaceTeleporter(worldTarget, 0, xTarget, yTarget, zTarget) );
+
+
+							entityPlayerMP.setPositionAndUpdate(xTarget + 0.5D, yTarget + 0.2D, zTarget + 0.5D);
+							entityPlayerMP.sendPlayerAbilities();								
+						}
+					}
+				}
+			}
 		
 		// *** world transition handling
 		// If player falling down, teleport to child celestial object
