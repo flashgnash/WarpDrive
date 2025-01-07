@@ -56,7 +56,8 @@ public class RenderOverlayAir {
 
 		                           
 		final boolean hasValidSetup = BreathingManager.hasValidSetup(entityPlayer);
-		final boolean needsOxygen = BreathingManager.needsOxygen(entityPlayer);
+		final boolean needsOxygen = BreathingManager.needsOxygen(entityPlayer); // TODO This is bad - reading NBT data on the render thread is a terrile idea.
+																																						// It doesn't seem to be causing an issue on servers so I'm ignoring it for now though
 		final float ratioAirReserve = BreathingManager.getAirReserveRatio(entityPlayer);
 		
 		// start rendering
