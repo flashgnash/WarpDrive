@@ -144,7 +144,7 @@ public class LivingHandler {
 		}
 
 		
-		if (entityLivingBase instanceof EntityPlayerMP ) {
+		if (WarpDriveConfig.ALLOW_PLAYER_SPACE_TRAVEL && entityLivingBase instanceof EntityPlayerMP ) {
 
 			final EntityPlayerMP entityPlayerMP = (EntityPlayerMP) entityLivingBase;
 
@@ -154,7 +154,7 @@ public class LivingHandler {
 				(int) entityPlayerMP.posZ
 			);
 
-			if (entityLivingBase.posY > 500.0D) {
+			if (entityLivingBase.posY > WarpDriveConfig.PLAYER_SPACE_TRAVEL_Y_LEVEL) {
 					if ( !(celestialObjectCurrent.isSpace() || celestialObjectCurrent.isHyperspace())) {		
 						if ( celestialObjectCurrent.parent != null && !celestialObjectCurrent.parent.isVirtual() ) {
 
